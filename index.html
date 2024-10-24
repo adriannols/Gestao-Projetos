@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Projetos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Cadastrar Projeto</a></li>
+            <li><a href="tarefas.html">Cadastrar Tarefa</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Cadastrar Projeto</h1>
+        <form id="projetoForm">
+            <label for="prj_descricao">Descrição do Projeto:</label>
+            <input type="text" id="prj_descricao" name="prj_descricao" required>
+
+            <label for="prj_status">Status do Projeto:</label>
+            <select id="prj_status" name="prj_status" required>
+                <option value="">Selecione o status</option>
+                <option value="A">Em Análise</option>
+                <option value="P">Em Andamento</option>
+                <option value="H">Homologação</option>
+                <option value="F">Finalizado</option>
+            </select>
+
+            <button type="submit">Cadastrar Projeto</button>
+            <div id="mensagemProjeto"></div>
+        </form>
+    </div>
+    <div id="mensagem"></div>
+
+    <script>
+        const form = document.getElementById('projetoForm');
+        const mensagem = document.getElementById('mensagemProjeto');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const descricao = document.getElementById('prj_descricao').value;
+            const status = document.getElementById('prj_status').value;
+
+            // Enviar os dados via POST para o backend
+            fetch('http://localhost:3000/projetos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prj_descricao: descricao, prj_status: status }),
+            }) 
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na requisição: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                mensagem.innerHTML = `<p>Projeto <strong>${data.prj_descricao}</strong> cadastrado com sucesso!</p>`;
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mensagem.innerHTML = `<p>Erro ao cadastrar o projeto</p>`;
+            });
+        });
+    </script>
+</body>
+</html>

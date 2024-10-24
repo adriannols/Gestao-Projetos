@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Tarefa</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Cadastrar Projeto</a></li>
+            <li><a href="tarefas.html">Cadastrar Tarefa</a></li>
+        </ul>
+    </nav>
+
+    <h1>Cadastrar Tarefa</h1>
+
+    <form id="tarefaForm">
+        <label for="titulo">Título da Tarefa:</label>
+        <input type="text" id="titulo" name="titulo" required>
+
+        <label for="descricao">Descrição da Tarefa:</label>
+        <input type="text" id="descricao" name="descricao" required>
+
+        <!-- Campo para selecionar o projeto -->
+        <label for="projeto_id">Selecione o Projeto:</label>
+        <select id="projeto_id" name="projeto_id" required>
+            <option value="">Carregando projetos...</option>
+        </select>
+
+        <button type="submit">Cadastrar Tarefa</button>
+        <div id="mensagemTarefa"></div>
+    </form>
+
+    <script>
+        const form = document.getElementById('tarefaForm');
+        const mensagem = document.getElementById('mensagemTarefa');
+        const selectProjeto = document.getElementById('projeto_id');
+
+        // Função para carregar os projetos dinamicamente
+        function carregarProjetos() {
+            fetch('http://localhost:3000/projetos') 
+                .then(response => response.json())
+                .then(data => {
+                    // Limpar o select antes de adicionar os projetos
+                    selectProjeto.innerHTML = '';
+
+                    // Adicionar uma opção padrão
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione um projeto';
+                    selectProjeto.appendChild(optionDefault);
+
+                    // Adicionar os projetos ao select
+                    data.forEach(projeto => {
+                        const option = document.createElement('option');
+                        option.value =  projeto.prj_id;  // O id do projeto vai como value
+                        option.textContent = projeto.prj_descricao;;  // O nome do projeto será exibido
+                        selectProjeto.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar os projetos:', error);
+                    selectProjeto.innerHTML = '<option value="">Erro ao carregar projetos</option>';
+                });
+        }
+
+        // Chamar a função para carregar os projetos ao carregar a página
+        window.onload = carregarProjetos;
+
+        // Manipulador de evento para o envio do formulário
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const trf_titulo = document.getElementById('titulo').value;
+            const trf_descricao = document.getElementById('descricao').value;
+            const projeto_id = document.getElementById('projeto_id').value;  // Obtendo o projeto selecionado
+
+            // Enviar os dados via POST para o backend
+            fetch('http://localhost:3000/tarefas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({trf_titulo, trf_descricao, projeto_id }), // Enviando o projeto_id junto com os outros dados
+            })
+            .then(response => response.json())
+            .then(data => {
+                mensagem.innerHTML = `<p>Tarefa <strong>${data.trf_titulo }</strong> cadastrada com sucesso!</p>`;
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mensagem.innerHTML = `<p>Erro ao cadastrar a tarefa</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
